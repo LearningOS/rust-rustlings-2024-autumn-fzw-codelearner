@@ -2,11 +2,11 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
+
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
-use std::vec::*;
+use std::{result, vec::*};
 
 #[derive(Debug)]
 struct Node<T> {
@@ -19,7 +19,7 @@ impl<T> Node<T> {
         Node {
             val: t,
             next: None,
-        }
+        }                
     }
 }
 #[derive(Debug)]
@@ -29,13 +29,17 @@ struct LinkedList<T> {
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T> Default for LinkedList<T> 
+    where T:PartialOrd+Clone,
+{
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T> LinkedList<T> 
+    where T:PartialOrd+Clone,
+    {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -72,11 +76,42 @@ impl<T> LinkedList<T> {
 	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
 	{
 		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+		let mut result = Self{
+            length:0,
+            start:None,
+            end:None,
+        };
+        let (mut a, mut b) = (list_a.start, list_b.start);
+
+        while a.is_some() && b.is_some() {
+            let a_val = unsafe { (*a.unwrap().as_ptr()).val.clone() };
+            let b_val = unsafe { (*b.unwrap().as_ptr()).val.clone() };
+
+            if a_val <= b_val {
+                result.add(a_val);
+                a = unsafe { (*a.unwrap().as_ptr()).next };
+            } else {
+                result.add(b_val);
+                b = unsafe { (*b.unwrap().as_ptr()).next };
+            }
         }
+
+        // 如果链表 A 还有剩余节点，将它们添加到结果链表中
+        while a.is_some() {
+            let val = unsafe { (*a.unwrap().as_ptr()).val.clone() };
+            result.add(val);
+            a = unsafe { (*a.unwrap().as_ptr()).next };
+        }
+
+        // 如果链表 B 还有剩余节点，将它们添加到结果链表中
+        while b.is_some() {
+            let val = unsafe { (*b.unwrap().as_ptr()).val.clone() };
+            result.add(val);
+            b = unsafe { (*b.unwrap().as_ptr()).next };
+        }
+
+        result
+
 	}
 }
 
