@@ -2,7 +2,7 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
+
 
 use std::cmp::Ord;
 use std::default::Default;
@@ -38,6 +38,22 @@ where
 
     pub fn add(&mut self, value: T) {
         //TODO
+        self.items.push(value);
+        self.count += 1;
+        self.bubble_up(self.count);
+    }
+
+    fn bubble_up(&mut self, idx: usize) {
+        let mut current_idx = idx;
+        while current_idx > 1 {
+            let parent_idx = self.parent_idx(current_idx);
+            if (self.comparator)(&self.items[current_idx], &self.items[parent_idx]) {
+                self.items.swap(current_idx, parent_idx);
+                current_idx = parent_idx;
+            } else {
+                break;
+            }
+        }
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -58,8 +74,35 @@ where
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
         //TODO
-		0
+		 let left_idx = self.left_child_idx(idx);
+        let right_idx = self.right_child_idx(idx);
+
+        if right_idx <= self.count {
+            if (self.comparator)(&self.items[left_idx], &self.items[right_idx]) {
+                left_idx
+            } else {
+                right_idx
+            }
+        } else if left_idx <= self.count {
+            left_idx
+        } else {
+            idx // No children
+        }
     }
+
+    fn bubble_down(&mut self, idx: usize) {
+        let mut current_idx = idx;
+        while self.children_present(current_idx) {
+            let child_idx = self.smallest_child_idx(current_idx);
+            if (self.comparator)(&self.items[child_idx], &self.items[current_idx]) {
+                self.items.swap(current_idx, child_idx);
+                current_idx = child_idx;
+            } else {
+                break;
+            }
+        }
+    }
+
 }
 
 impl<T> Heap<T>
@@ -79,13 +122,24 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default+Clone,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
         //TODO
-		None
+		if self.is_empty() {
+            return None;
+        }
+
+        let root = self.items[1].clone(); // The root is at index 1
+        self.items.swap(1, self.count); // Swap root with the last element
+        self.count -= 1;
+        self.items.pop(); // Remove the last element
+        if !self.is_empty() {
+            self.bubble_down(1);
+        }
+        Some(root)
     }
 }
 

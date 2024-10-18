@@ -3,12 +3,13 @@
 	This problem requires you to implement a basic interface for a binary tree
 */
 
-//I AM NOT DONE
 use std::cmp::Ordering;
 use std::fmt::Debug;
+use std::ptr::NonNull;
 
 
 #[derive(Debug)]
+
 struct TreeNode<T>
 where
     T: Ord,
@@ -19,6 +20,7 @@ where
 }
 
 #[derive(Debug)]
+
 struct BinarySearchTree<T>
 where
     T: Ord,
@@ -50,17 +52,43 @@ where
 
     // Insert a value into the BST
     fn insert(&mut self, value: T) {
-        //TODO
-        if self.root==None{
-            
+        self.root = Self::insert_node(self.root.take(), value);
+    }
+
+    fn insert_node(node: Option<Box<TreeNode<T>>>, value: T) -> Option<Box<TreeNode<T>>> {
+        match node {
+            None => Some(Box::new(TreeNode::new(value))),
+            Some(mut node) => {
+                if value < node.value {
+                    node.left = Self::insert_node(node.left.take(), value);
+                } else if value > node.value {
+                    node.right = Self::insert_node(node.right.take(), value);
+                } // 如果 value 等于 node.value，我们不插入，因为 BST 不允许重复
+                Some(node)
+            }
         }
     }
 
     // Search for a value in the BST
     fn search(&self, value: T) -> bool {
-        //TODO
-        true
+        Self::search_node(self.root.as_ref(), value)
     }
+
+    fn search_node(node: Option<&Box<TreeNode<T>>>, value: T) -> bool {
+        match node {
+            None => false,
+            Some(n) => {
+                if value == n.value {
+                    true
+                } else if value < n.value {
+                    Self::search_node(n.left.as_ref(), value)
+                } else {
+                    Self::search_node(n.right.as_ref(), value)
+                }
+            }
+        }
+    }
+
 }
 
 impl<T> TreeNode<T>
@@ -69,6 +97,8 @@ where
 {
     // Insert a node into the tree
     fn insert(&mut self, value: T) {
+        
+        
         //TODO
     }
 }
